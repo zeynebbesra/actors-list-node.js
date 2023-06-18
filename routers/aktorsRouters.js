@@ -1,81 +1,130 @@
 const router = require('express').Router()
-let data = require("../data.js")
+// let data = require("../data.js")
+const Aktor = require("../data/data-model.js")
 
 
-router.get('/', (req, res) => {
-    res.status(200).json(data)
+router.get('/', (req, res, next) => {
+    Aktor.findAktor()
+    .then((aktorler) => {
+        res.status(200).json(aktorler)
+    }).catch((error) => {
+        next({
+            statusCode: 500,
+            errorMesage:"An error occurred while retrieving actors",
+            error, // hatanın kendisi
+        })
+    })
+    
 })
+
 
 // burada "next" metoduna ihtiyacımız var çünkü error handlig kullanacağız yani bir problem olduğunda buradaki kullanıcıyı errorhandling middleware'ine gönderecek olan next fonksiyonu.
-
-let next_id = 4;
 router.post('/',(req, res, next) => {
-    let yeni_aktor = req.body
-    if (!yeni_aktor.isim){
+    const yeniAktor = req.body
+
+    if (!yeniAktor.isim){
         next({
             statusCode: 400,
-            errorMesage: "Aktor ekleyebilmek için isim girmelisiniz."
+            errorMesage: "You must enter name to add actor" 
         })
-    }else if (yeni_aktor.isim && !yeni_aktor.filmler){
-        next({
-            statusCode: 400,
-            errorMesage: "Aktorun filmlerini girmelisiniz."
+    } else {
+        Aktor.addAktor(yeniAktor)
+        .then((added) => {
+            res.status(201).json(added)
         })
-    }else {
-        yeni_aktor.id = next_id
-        next_id++
-        data.push(yeni_aktor)
-        res.status(201).json(yeni_aktor)
+        .catch((error) => {
+            // console.log(error)
+            next({
+                statusCode: 500,
+                errorMesage: "An error occurred while adding an actor",
+                error
+            })
+        })
     }
-   
 })
-    
 
-router.delete("/:id", (req,res) => {
-    const silinecek_aktor_id = req.params.id
-    const silinecek_aktor=data.find(
-        (aktor) => aktor.id === Number(silinecek_aktor_id)
-    )
 
-    if (silinecek_aktor){
-        data = data.filter((aktor) => aktor.id !== Number(silinecek_aktor_id))
-        res.status(204).end()
-    }else{
-        res
-        .status(404)
-        .json({errorMesage: "Silmeye calistiginiz aktor sistemde yok"})
+router.patch('/:id', (req, res, next) => {
+    const { id } = req.params;
+    const updatedAktor = req.body;
+
+    if (!updatedAktor.isim){
+        next({
+            statusCode: 400,
+            errorMesage: "Actor name cannot be empty."
+        })
+    } else{
+        Aktor.updateAktor(updatedAktor, id)
+        .then((updated) => {
+            res.status(200).json(updated)
+        })
+        .catch((error) => {
+            next({
+                statusCode : 500,
+                errorMesage:"An error occurred while editing the actor.",
+                error,
+            })
+
+        })
     }
+  })
+
+    
+router.delete("/:id", (req,res,next) => {
+    const {id} = req.params
+
+    Aktor.findAktorByID(id).then((deletedAktor) => {
+        Aktor.deleteAktor(id)
+        .then((deleted) => {
+            if(deleted){
+                res.status(204).end()
+            }
+            next({
+                statusCode: 400,
+                errorMesage:"The actor you are trying to delete does not exist in the system."
+            })
+        }).catch((error) => {
+            next({
+                statusCode: 500,
+                errorMesage:"An error occurred while deleting the actor.",
+                error,
+            })
+        }).catch((error) => {
+            next({
+                statusCode:500,
+                errorMesage:"An error occurred while searching the actor.",
+                error,
+            })
+        })
+
+    })
+
 })
 
 //'req.params' nesnesi, istemciden gelen isteğin URL'indeki parametreleri içerir. 
 //Bu durumda, '/aktorler/:id' yolunda belirtilen 'id' parametresine erişmek için kullanılır.
-router.get('/:id', (req, res) => {
-    console.log("req.body:", req.body)
-    const { id } = req.params   
-    const aktor = data.find((aktor) => aktor.id === parseInt(id))
+router.get('/:id', (req, res, next) => {
+   const {id} = req.params
+
+   Aktor.findAktorByID(id)
+   .then((aktor) => {
     if(aktor){
         res.status(200).json(aktor)
-    }else {
-        res.status(404).send('Aradiginiz aktor bulunamadi...')
-    }
-})
-
-router.patch('/:id/update', (req, res) => {
-    const { id } = req.params;
-    const newInfo = req.body;
-    const aktorIndex = data.findIndex((aktor) => aktor.id === parseInt(id));
-  
-    if (aktorIndex) {
-        console.log("aktorIndex:", aktorIndex)
-        
-        data[aktorIndex] = { ...data[aktorIndex], ...newInfo };
-        console.log("data", data)
-        res.status(200).json(data[aktorIndex]);
-        console.log("aktorIndex",data[aktorIndex])
     } else {
-        res.status(404).send('Aradiginiz aktor bulunamadi...');
+        next({
+            statusCode: 400,
+            errorMesage: "Actor not found"
+        })
     }
-  });
-
+   })
+   .catch((error) => {
+    next({
+        statusCode: 500,
+        errorMesage:"An error occurred while searching the actor.",
+        error,
+    })
+   })
+  
+})
 
 module.exports = router

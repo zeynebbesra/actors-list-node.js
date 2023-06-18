@@ -5,10 +5,10 @@
 exports.up = function(knex) {
   return knex.schema.createTable('aktor', (table)=>{
     table.increments()
-    table.string('isim',100).notNullable()
+    table.string('isim').notNullable()
   }).createTable('film', (table)=>{
     table.increments()
-    table.string('isim',200).notNullable()
+    table.string('isim').notNullable()
   }).createTable('aktor_film', (table)=>{
     table.increments()
     table.integer('film_id').unsigned()
