@@ -1,6 +1,7 @@
 // require("dotenv").config()
 const express = require("express")
 const aktorlerRouter = require('./routers/aktorsRouters')
+const moviesRouter = require('./routers/moviesRouters')
 const logger = require('./middlewares/logger')
 const errorHandling = require('./middlewares/errorHandling')
 
@@ -10,6 +11,7 @@ server.use(logger)
 
 server.use("/aktorler",aktorlerRouter) // aktorler adresinden gelen tüm isteklere 'aktorlerRouter' buradan cevap ver.
 
+server.use("/movies",moviesRouter)
 
 server.get('/', (req, res) =>{
     res.send("Express'ten merhaba")

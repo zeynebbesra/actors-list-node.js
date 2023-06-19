@@ -18,14 +18,13 @@ router.get('/', (req, res, next) => {
 })
 
 
-// burada "next" metoduna ihtiyacımız var çünkü error handlig kullanacağız yani bir problem olduğunda buradaki kullanıcıyı errorhandling middleware'ine gönderecek olan next fonksiyonu.
+// burada "next" metoduna ihtiyacımız var çünkü error handlig kullanacağız yani bir problem olduğunda buradaki kullanıcıyı errorhandling middleware'ine gönderecek olan next fonksiyonudur.
 router.post('/',(req, res, next) => {
     const yeniAktor = req.body
-
     if (!yeniAktor.isim){
         next({
             statusCode: 400,
-            errorMesage: "You must enter name to add actor" 
+            errorMesage: "You must enter a name to add actor" 
         })
     } else {
         Aktor.addAktor(yeniAktor)

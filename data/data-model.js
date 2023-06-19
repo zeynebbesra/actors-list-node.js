@@ -6,6 +6,11 @@ module.exports = {
     addAktor,
     updateAktor,
     deleteAktor,
+    findMovies,
+    addMovies,
+    updateMovie,
+    deleteMovie,
+    findMovieByID,
 }
 
 function findAktor(){
@@ -26,7 +31,6 @@ function addAktor(yeniAktor) {
     })
 }
 
-
 //updated değişkeni, güncelleme işleminin sonucunu temsil eder.
 //updatedAktor, güncellenmiş aktör bilgilerini içeren bir nesnedir. 
 function updateAktor(updatedAktor, id){
@@ -43,4 +47,35 @@ function updateAktor(updatedAktor, id){
 
 function deleteAktor(id) {
     return db("aktor").del().where({id})
+}
+
+function findMovies(){
+    return db("film")
+}
+
+function addMovies(yeniFilm){
+    return db("film")
+    .insert(yeniFilm, "id")
+    .then(([id]) => {
+        return db("film").where( id ).first()
+    })
+}
+
+function updateMovie(updatedMovie, id){
+    return db("film")
+    .update(updatedMovie)
+    .where({ id })
+    .then((updated) =>  {
+        if (updated){
+            return db("film").where({id}).first()
+        }
+    })
+}
+
+function deleteMovie(id){
+    return db("film").del().where({id})
+}
+
+function findMovieByID(id){
+    return db("film").where({ id }).first()
 }
