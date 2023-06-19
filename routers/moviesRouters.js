@@ -80,7 +80,7 @@ router.delete('/:id', (req, res, next)=>{
             Film.deleteMovie(id)
             .then((deleted)=>{
                 if(deleted){
-                    res.status(204).json();
+                    res.status(204).end();
                 }
             })
             .catch((error) => {
